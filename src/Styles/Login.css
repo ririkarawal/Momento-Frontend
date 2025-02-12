@@ -1,0 +1,102 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: hsl(24, 100%, 84%);
+}.forgot-password {
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #777;
+}
+
+
+.login-box {
+  display: flex;
+  width: 60%;
+  height: 530px; /* Ensure the box has a fixed height */
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.left-section {
+  width: 40%;
+  height: 81%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("/public/pin.jpg");
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: black;
+}
+
+.left-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.forgot-password {
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #777;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #ffccab;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.signup-text a {
+  color: #e67e22;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.right-section {
+  width: 50%;
+  background: #ffebdc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
