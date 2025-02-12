@@ -28,7 +28,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-image: url("/public/pin.jpg");
+  background-image: url("/pin.jpg");
   padding: 50px;
   display: flex;
   flex-direction: column;
