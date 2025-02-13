@@ -4,19 +4,24 @@
   align-items: center;
   height: 100vh;
   background-color: hsl(24, 100%, 84%);
-}.forgot-password {
+  margin-top: 50px;
+
+}
+
+.forgot-password {
   display: block;
   text-align: right;
   margin-top: 5px;
   font-size: 12px;
   color: #777;
+  z-index: 1000;
 }
 
 
 .login-box {
   display: flex;
   width: 60%;
-  height: 530px; /* Ensure the box has a fixed height */
+  height: 530px; 
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   overflow: hidden;

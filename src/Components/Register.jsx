@@ -1,6 +1,6 @@
 import "./../styles/Register.css";
 import { Link } from "react-router-dom";
-
+import "./../styles/Header.css";
 const Register = () => {
   return (
     <div className="register-container">
