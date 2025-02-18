@@ -15,22 +15,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       {/* Sidebar */}
-      <div className="sidebar">
-        <h2>Momento</h2>
-        <nav className="nav-links">
-          <a href="#">🏠 Home</a>
-          <label htmlFor="upload-input" className="upload-btn">📤 Upload Moments</label>
-          <input
-            type="file"
-            id="upload-input"
-            multiple
-            accept="image/*"
-            onChange={handleFileUpload}
-            style={{ display: "none" }}
-          />
-          <a href="#">🔔 Notification</a>
-        </nav>
-      </div>
+     
 
       {/* Main Content */}
       <div className="main-content">
@@ -67,6 +52,11 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* File Upload */}
+        <div className="file-upload">
+          <input type="file" multiple onChange={handleFileUpload} />
         </div>
 
         {/* Image Grid */}

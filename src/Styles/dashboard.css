@@ -5,20 +5,7 @@
   background-color: #f8f8f8;
 }
 
-/* Sidebar - Fixed on Left */
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 220px;
-  height: 100vh; /* Full height */
-  background-color: #ffcccc;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-}
+
 
 /* Navigation Links */
 .nav-links a, .upload-btn {
