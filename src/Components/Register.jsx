@@ -1,12 +1,29 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../api/api"; // Import API function
 import "./../styles/Register.css";
-import { Link } from "react-router-dom";
-import "./../styles/Header.css";
 
 const Register = () => {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // Changed from phone to username
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate(); // For redirection
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      await registerUser({ email, username, password }); // Call API
+      navigate("/login"); // Redirect to login after successful registration
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed");
+    }
+  };
+
   return (
     <div className="register-container">
       <div className="register-box">
-        {/* Right Section (Image) - Move this above Left Section */}
+        {/* Right Section (Image) */}
         <div className="right-section">
           <img src="/logo.png" alt="Register Illustration" />
         </div>
@@ -14,18 +31,37 @@ const Register = () => {
         {/* Left Section (Form) */}
         <div className="left-section">
           <h2>Create Account</h2>
-          <form>
+          {error && <p className="error-message">{error}</p>}
+          <form onSubmit={handleRegister}>
             <div className="input-group">
               <label>Email</label>
-              <input type="email" placeholder="email@gmail.com" />
+              <input
+                type="email"
+                placeholder="email@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div className="input-group">
-              <label>Phone No</label>
-              <input type="text" placeholder="Enter your phone no" />
+              <label>Username</label> {/* Changed label to Username */}
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             </div>
             <div className="input-group">
               <label>Password</label>
-              <input type="password" placeholder="Enter your password" />
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
             <button type="submit" className="register-btn">
               Create Account

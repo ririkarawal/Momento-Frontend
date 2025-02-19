@@ -7,6 +7,8 @@ import Login from './Components/Login';
 import Register from './Components/Register';
 import Dashboard from './Components/dashboard';
 import Header from './Components/Header';
+import Sidebar from './Components/Sidebar';
+import Profile from './Components/Profile'; // Import Profile component
 
 const App = () => {
   const location = useLocation();
@@ -15,9 +17,11 @@ const App = () => {
     <>
       {/* Hide Header on the Dashboard route */}
       {location.pathname !== '/dashboard' && <Header />}
+      {location.pathname === '/dashboard' && <Sidebar />}
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />

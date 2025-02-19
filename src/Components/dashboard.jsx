@@ -1,78 +1,31 @@
-import { useState } from "react";
 import "./../styles/Dashboard.css";
+import Top from "./../Components/top.jsx";
 
-export default function Dashboard() {
-  const [profileDropdown, setProfileDropdown] = useState(false);
-  const [filterDropdown, setFilterDropdown] = useState(false);
-  const [images, setImages] = useState([]);
-
-  const handleFileUpload = (event) => {
-    const files = Array.from(event.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setImages([...images, ...newImages]);
-  };
+const Dashboard = () => {
+  const images = [
+    { id: 1, username: "User1", url: "https://via.placeholder.com/150" },
+    { id: 2, username: "User2", url: "https://via.placeholder.com/150" },
+    { id: 3, username: "User3", url: "https://via.placeholder.com/150" },
+  ];
 
   return (
     <div className="dashboard">
-      {/* Sidebar */}
-     
-
-      {/* Main Content */}
-      <div className="main-content">
-        {/* Header */}
-        <div className="header">
-          <div className="search-bar">
-            <input type="text" placeholder="Search..." />
-            <span>🔍</span>
-          </div>
-
-          {/* Icons Section */}
-          <div className="icons">
-            {/* Filter Icon */}
-            <div className="icon" onClick={() => setFilterDropdown(!filterDropdown)}>
-              ⚙️
-              {filterDropdown && (
-                <div className="dropdown">
-                  <a href="#">Filter 1</a>
-                  <a href="#">Filter 2</a>
-                  <a href="#">Filter 3</a>
-                </div>
-              )}
+      <Top />
+      <div className="grid">
+        {images.map((image) => (
+          <div className="card" key={image.id}>
+            <div className="img-wrap">
+              <img src={image.url} alt="Uploaded" className="img-box" />
             </div>
-
-            {/* Profile Icon */}
-            <div className="icon" onClick={() => setProfileDropdown(!profileDropdown)}>
-              👤
-              {profileDropdown && (
-                <div className="dropdown">
-                  <a href="#">Profile</a>
-                  <a href="#">Settings</a>
-                  <a href="#">Logout</a>
-                </div>
-              )}
+            <div className="info">
+              <span className="username">{image.username}</span>
+              <button className="like">❤️</button>
             </div>
           </div>
-        </div>
-
-        {/* File Upload */}
-        <div className="file-upload">
-          <input type="file" multiple onChange={handleFileUpload} />
-        </div>
-
-        {/* Image Grid */}
-        <div className="grid">
-          {images.length > 0 ? (
-            images.map((src, index) => (
-              <div className="box" key={index}>
-                <img src={src} alt={`Uploaded ${index}`} />
-                <p>User {index + 1}</p>
-              </div>
-            ))
-          ) : (
-            <p className="no-images">No images uploaded yet.</p>
-          )}
-        </div>
+        ))}
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

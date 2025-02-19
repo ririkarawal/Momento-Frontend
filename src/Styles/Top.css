@@ -1,0 +1,100 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 40px;
+    background-color: #b37171;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+
+
+/* Centering search bar */
+.search-bar-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+.search-input {
+    width: 50%;
+    padding: 8px 40px 8px 20px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #888;
+}
+
+/* Navigation icons */
+.nav-icons {
+    display: flex;
+    gap: 20px;
+    font-size: large;
+    align-items: center;
+}
+
+.icon {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Dropdown Styling */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 150px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-menu a {
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        padding: 10px 20px;
+    }
+
+    .search-bar-container {
+        margin: 10px 0;
+    }
+}
