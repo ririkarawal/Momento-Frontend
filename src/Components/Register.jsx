@@ -1,29 +1,30 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../api/api"; // Import API function
+import { registerUser } from "../api/api"; // Your API call for registration
 import "./../styles/Register.css";
 
 const Register = () => {
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState(""); // Changed from phone to username
+  const [username, setUsername] = useState(""); // Using username instead of phone
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // For redirection
+  const navigate = useNavigate(); // For redirection after registration
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await registerUser({ email, username, password }); // Call API
-      navigate("/login"); // Redirect to login after successful registration
+      await registerUser({ email, username, password });
+      navigate("/login"); // Redirect to login on success
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      // Adjust this according to your backend's error response property
+      setError(err.response?.data?.error || "Registration failed");
     }
   };
 
   return (
     <div className="register-container">
       <div className="register-box">
-        {/* Right Section (Image) */}
+        {/* Right Section (Illustration/Image) */}
         <div className="right-section">
           <img src="/logo.png" alt="Register Illustration" />
         </div>
@@ -44,7 +45,7 @@ const Register = () => {
               />
             </div>
             <div className="input-group">
-              <label>Username</label> {/* Changed label to Username */}
+              <label>Username</label>
               <input
                 type="text"
                 placeholder="Enter your username"

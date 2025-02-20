@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./../styles/Profile.css";
+import Top from "./Top";
 
 const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
@@ -38,8 +39,15 @@ const Profile = () => {
         <span className="tab active">Created</span>
         <span className="tab">Saved</span>
       </div>
+      <Top />
     </div>
   );
 };
 
 export default Profile;
+
+
+
+
+
+

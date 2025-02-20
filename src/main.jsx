@@ -10,14 +10,17 @@ import Header from './Components/Header';
 import Sidebar from './Components/Sidebar';
 import Profile from './Components/Profile'; // Import Profile component
 
+
 const App = () => {
   const location = useLocation();
 
   return (
     <>
       {/* Hide Header on the Dashboard route */}
-      {location.pathname !== '/dashboard' && <Header />}
+      {/* {location.pathname !== '/dashboard' && <Header />} */}
       {location.pathname === '/dashboard' && <Sidebar />}
+      {!(location.pathname === '/dashboard' || location.pathname === '/profile') && <Header />}
+
 
       <Routes>
         <Route path="/" element={<LandingPage />} />

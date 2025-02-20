@@ -32,8 +32,8 @@ const createUpload = (data) => axios.post(`${API_URL}/create_uploads`, data, { h
 const updateUpload = (id, data) => axios.put(`${API_URL}/update_uploads/${id}`, data, { headers: getAuthHeaders() });
 const deleteUpload = (id) => axios.delete(`${API_URL}/delete_uploads/${id}`, { headers: getAuthHeaders() });
 
-const loginUser = (data) => axios.post(`${API_URL}/login`, data);
-const registerUser = (data) => axios.post(`${API_URL}/signup`, data);
+const loginUser = (data) => axios.post(`${API_URL}/users/login`, data);
+const registerUser = (data) => axios.post(`${API_URL}/users/signup`, data);
 const getUsers = () => axios.get(`${API_URL}/view_users`, { headers: getAuthHeaders() });
 const createUser = (data) => axios.post(`${API_URL}/create_users`, data, { headers: getAuthHeaders() });
 const updateUser = (id, data) => axios.put(`${API_URL}/update_users/${id}`, data, { headers: getAuthHeaders() });

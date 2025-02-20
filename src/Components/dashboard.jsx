@@ -1,5 +1,5 @@
 import "./../styles/Dashboard.css";
-import Top from "./../Components/top.jsx";
+import Top from "./Top.jsx";
 
 const Dashboard = () => {
   const images = [

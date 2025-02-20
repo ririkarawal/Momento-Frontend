@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../api/api"; // Import API function
+import { loginUser } from "../api/api"; // Your API call for login
 import "./../styles/Login.css";
 
 const Login = () => {
@@ -12,19 +12,21 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await loginUser({ email, password }); // Call API
-      localStorage.setItem("token", response.data.token); // Store token
-      navigate("/dashboard"); // Redirect to dashboard
+      const response = await loginUser({ email, password });
+      localStorage.setItem("token", response.data.token);
+      // Ensure there is no space in the route
+      navigate("/dashboard"); 
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.error || "Login failed");
     }
   };
+  
 
   return (
     <div className="login-container">
       <div className="login-box">
         <div className="left-section">
-          <h2>Welcome Back!!</h2>
+          <h2>Welcome Back!</h2>
           {error && <p className="error-message">{error}</p>}
           <form onSubmit={handleLogin}>
             <div className="input-group">
