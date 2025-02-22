@@ -1,11 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getCurrentUser } from "../api/api"; // Ensure this path is correct
+ // Import the new function
 import "./../styles/Profile.css";
 import Top from "./Top";
 
 const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
-  const username = "Ri"; // Change dynamically based on user data
-  const followingCount = 0; // Change dynamically based on following data
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((response) => {
+        setUser(response.data); // Assuming response.data contains { username, followingCount }
+      })
+      .catch((error) => {
+        setError("Failed to load user data"); // ✅ Display error message
+        console.error("Error fetching user data:", error);
+      });
+  }, []);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -15,12 +28,13 @@ const Profile = () => {
     }
   };
 
+
   return (
     <div className="profile-container">
       <div className="profile-header">
         <label htmlFor="profile-upload" className="profile-pic">
           <img
-            src={profileImage || "https://via.placeholder.com/150"}
+            src={profileImage || "https://via.placeholder.com/150"} // ✅ Default image
             alt="Profile"
           />
         </label>
@@ -31,8 +45,16 @@ const Profile = () => {
           onChange={handleImageUpload}
           hidden
         />
-        <h2 className="username">{username}</h2>
-        <p className="following">{followingCount} following</p>
+        
+        {error ? ( // ✅ Show error if API call fails
+          <p className="error-message">{error}</p>
+        ) : (
+          <>
+            <h2 className="username">{user ? user.username : "Loading..."}</h2>
+            <p className="following">{user ? `${user.followingCount} following` : "Loading..."}</p>
+          </>
+        )}
+
         <button className="edit-profile">Edit Profile</button>
       </div>
       <div className="tabs">
@@ -43,11 +65,4 @@ const Profile = () => {
     </div>
   );
 };
-
 export default Profile;
-
-
-
-
-
-

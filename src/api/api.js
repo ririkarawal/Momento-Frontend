@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://localhost:8092';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -39,11 +39,15 @@ const createUser = (data) => axios.post(`${API_URL}/create_users`, data, { heade
 const updateUser = (id, data) => axios.put(`${API_URL}/update_users/${id}`, data, { headers: getAuthHeaders() });
 const deleteUser = (id) => axios.delete(`${API_URL}/delete_users/${id}`, { headers: getAuthHeaders() });
 
+/** ✅ Added function to get the logged-in user's profile */
+const getCurrentUser = () => axios.get(`${API_URL}/users/me`, { headers: getAuthHeaders() });
+
 export {
     getCategories, createCategory, updateCategory, deleteCategory,
     getComments, createComment, updateComment, deleteComment,
     getPins, createPin, updatePin, deletePin,
     getReminders, createReminder, updateReminder, deleteReminder,
     getUploads, createUpload, updateUpload, deleteUpload,
-    loginUser, registerUser, getUsers, createUser, updateUser, deleteUser
+    loginUser, registerUser, getUsers, createUser, updateUser, deleteUser,
+    getCurrentUser // ✅ Ensure this is exported
 };
