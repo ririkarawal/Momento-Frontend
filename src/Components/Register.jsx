@@ -13,10 +13,25 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await registerUser({ email, username, password });
-      navigate("/login"); // Redirect to login on success
+      const response = await registerUser({ email, username, password });
+
+      // Debugging response to ensure correct structure
+      console.log("📥 Register Response:", response.data); 
+
+      // Extract user details from response
+      const { token, username: savedUsername, isAdmin, userId } = response.data;
+
+      // Save to localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("username", savedUsername);
+      localStorage.setItem("isAdmin", isAdmin);
+
+      // Redirect to dashboard on success
+      navigate("/dashboard");
     } catch (err) {
-      // Adjust this according to your backend's error response property
+      // Handle registration errors
+      console.error("🚨 Registration Error:", err.response?.data || err);
       setError(err.response?.data?.error || "Registration failed");
     }
   };
@@ -24,12 +39,9 @@ const Register = () => {
   return (
     <div className="register-container">
       <div className="register-box">
-        {/* Right Section (Illustration/Image) */}
         <div className="right-section">
           <img src="/logo.png" alt="Register Illustration" />
         </div>
-
-        {/* Left Section (Form) */}
         <div className="left-section">
           <h2>Create Account</h2>
           {error && <p className="error-message">{error}</p>}

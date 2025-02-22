@@ -12,15 +12,30 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Attempt to login the user
       const response = await loginUser({ email, password });
-      localStorage.setItem("token", response.data.token);
-      // Ensure there is no space in the route
-      navigate("/dashboard"); 
+
+      // Debugging response to ensure correct structure
+      console.log("📥 Login Response:", response.data);
+
+      // Extract token and user details from response
+      const { token, user } = response.data;
+      if (!token || !user) throw new Error("Invalid response from server");
+
+      // Save to localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("username", user.username);
+      localStorage.setItem("isAdmin", user.isAdmin);
+
+      // Redirect to dashboard on success
+      navigate("/dashboard");
     } catch (err) {
+      // Handle login errors
+      console.error("🚨 Login Error:", err.response?.data || err);
       setError(err.response?.data?.error || "Login failed");
     }
   };
-  
 
   return (
     <div className="login-container">
