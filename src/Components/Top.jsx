@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { BiCategory } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 import "./../styles/top.css";
@@ -8,6 +8,7 @@ const Top = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+    const navigate = useNavigate(); // For redirection after logout
 
     const toggleProfileDropdown = () => {
         setProfileDropdownOpen(!profileDropdownOpen);
@@ -30,6 +31,18 @@ const Top = () => {
         document.addEventListener("click", handleClickOutside);
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
+
+    // Handle logout
+    const handleLogout = () => {
+        // Remove user data from localStorage
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("username");
+        localStorage.removeItem("isAdmin");
+
+        // Redirect to landing page (home page)
+        navigate("/");
+    };
 
     return (
         <header className="header">
@@ -66,8 +79,8 @@ const Top = () => {
                     <CgProfile size={30} className="icon" onClick={toggleProfileDropdown} />
                     {profileDropdownOpen && (
                         <div className="dropdown-menu">
-                            <Link to="/profile">Profile</Link>  {/* Navigate to Profile Page */}
-                            <a href="#">Logout</a>
+                            <Link to="/profile">Profile</Link> {/* Navigate to Profile Page */}
+                            <a href="#" onClick={handleLogout}>Logout</a> {/* Handle Logout */}
                         </div>
                     )}
                 </div>
