@@ -1,10 +1,10 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://localhost:5000';
+const API_URL = "http://localhost:5000";
 
 const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const getCategories = () => axios.get(`${API_URL}/view_category`);
@@ -28,7 +28,14 @@ const updateReminder = (id, data) => axios.put(`${API_URL}/update_reminder/${id}
 const deleteReminder = (id) => axios.delete(`${API_URL}/delete_reminder/${id}`, { headers: getAuthHeaders() });
 
 const getUploads = () => axios.get(`${API_URL}/view_uploads`);
-const createUpload = (data) => axios.post(`${API_URL}/create_uploads`, data, { headers: getAuthHeaders() });
+const createUpload = (data) =>
+  axios.post(`${API_URL}/uploads/create_uploads`, data, {
+    headers: { 
+      "Content-Type": "multipart/form-data",
+      ...getAuthHeaders(),
+    },
+  });
+
 const updateUpload = (id, data) => axios.put(`${API_URL}/update_uploads/${id}`, data, { headers: getAuthHeaders() });
 const deleteUpload = (id) => axios.delete(`${API_URL}/delete_uploads/${id}`, { headers: getAuthHeaders() });
 

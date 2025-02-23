@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FaHome, FaUpload, FaBell, FaCog, FaBars } from "react-icons/fa";
 import Upload from "./Upload"; // Import Upload component
 import "./../styles/Sidebar.css";
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [showUpload, setShowUpload] = useState(false); // State for Upload Form
 
@@ -15,6 +16,26 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleSidebarItemClick = (label) => {
+    console.log(`Sidebar item clicked: ${label}`);
+    switch (label) {
+      case "Home":
+        navigate("/dashboard");
+        break;
+      case "Upload":
+        setShowUpload(true);
+        break;
+      case "Reminder":
+        alert("Reminder feature coming soon!");
+        break;
+      case "Setting":
+        navigate("/profile");
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -27,15 +48,30 @@ const Sidebar = () => {
             </button>
           </div>
           <nav className="nav">
-            <SidebarItem icon={<FaHome />} label="Home" isExpanded={isExpanded} />
+            <SidebarItem
+              icon={<FaHome />}
+              label="Home"
+              isExpanded={isExpanded}
+              onClick={() => handleSidebarItemClick("Home")}
+            />
             <SidebarItem
               icon={<FaUpload />}
               label="Upload"
               isExpanded={isExpanded}
-              onClick={() => setShowUpload(true)} // Open Upload Form
+              onClick={() => handleSidebarItemClick("Upload")}
             />
-            <SidebarItem icon={<FaBell />} label="Reminder" isExpanded={isExpanded} />
-            <SidebarItem icon={<FaCog />} label="Setting" isExpanded={isExpanded} />
+            <SidebarItem
+              icon={<FaBell />}
+              label="Reminder"
+              isExpanded={isExpanded}
+              onClick={() => handleSidebarItemClick("Reminder")}
+            />
+            <SidebarItem
+              icon={<FaCog />}
+              label="Setting"
+              isExpanded={isExpanded}
+              onClick={() => handleSidebarItemClick("Setting")}
+            />
           </nav>
         </div>
       </div>
@@ -48,7 +84,10 @@ const Sidebar = () => {
 
 const SidebarItem = ({ icon, label, isExpanded, onClick }) => {
   return (
-    <div className="sidebar-item" onClick={onClick}>
+    <div className="sidebar-item" onClick={() => { 
+      console.log(`Clicked on ${label}`);
+      onClick();
+    }}>
       <div className="icon">{icon}</div>
       {isExpanded && <span className="label">{label}</span>}
     </div>

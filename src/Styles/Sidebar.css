@@ -1,4 +1,7 @@
 .sidebar-container {
+
+    z-index: 1000; /* Ensure sidebar is above other elements */
+    position: relative;
   display: flex;
   margin-top: 69px;
 }
