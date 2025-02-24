@@ -1,41 +1,40 @@
 import { useState, useEffect } from "react";
+import { getUserUploads } from "../api/api";
 import "./../styles/Profile.css";
 import Top from "./Top";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
-  const [uploads, setUploads] = useState([]);  // State to store uploads
-  const [loading, setLoading] = useState(true); // State to handle loading
+  const [uploads, setUploads] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Profile page loaded");
-    const username = localStorage.getItem("username");
+    const fetchUserData = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const username = localStorage.getItem("username");
 
-    if (username) {
-      setUser({ username });
-      fetchUploads(username);  // Fetch uploads after setting username
-    } else {
-      setError("Failed to load user data");
-    }
-  }, []);
+        if (!userId || !username) {
+          throw new Error("User data not found");
+        }
 
-  // Fetch user uploads from the backend API
-  const fetchUploads = async (username) => {
-    try {
-      // Replace this with your API endpoint that fetches uploads by username or user ID
-      const response = await fetch(`http://localhost:5000/uploads/view_uploads?username=${username}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch uploads");
+        setUser({ username, userId });
+        
+        // Fetch only this user's uploads
+        const response = await getUserUploads(userId);
+        console.log("User uploads:", response.data);
+        setUploads(response.data);
+      } catch (err) {
+        console.error("Error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      const data = await response.json();
-      setUploads(data);  // Store the uploaded images in state
-      setLoading(false);
-    } catch (error) {
-      setError("Error fetching uploads");
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchUserData();
+  }, []);
 
   return (
     <div className="profile-container">
@@ -61,7 +60,6 @@ const Profile = () => {
         <span className="tab">Saved</span>
       </div>
 
-      {/* Created Section - Display uploaded images */}
       <div className="created-section">
         {loading ? (
           <p>Loading your uploads...</p>
@@ -70,8 +68,11 @@ const Profile = () => {
             {uploads.length > 0 ? (
               uploads.map((upload) => (
                 <div key={upload.id} className="upload-item">
-                  <img src={`http://localhost:5000/${upload.imagePath}`} alt={upload.description} />
-                  <p>{upload.description}</p>
+                  <img 
+                    src={`http://localhost:5000/${upload.imagePath}`} 
+                    alt={upload.description || 'Uploaded image'} 
+                  />
+                  {upload.description && <p>{upload.description}</p>}
                 </div>
               ))
             ) : (

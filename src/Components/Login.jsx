@@ -12,27 +12,23 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Attempt to login the user
+      // Add console log to see what's being sent
+      console.log("Sending login data:", { email, password });
+
       const response = await loginUser({ email, password });
+      console.log("Login response:", response);
 
-      // Debugging response to ensure correct structure
-      console.log("📥 Login Response:", response.data);
-
-      // Extract token and user details from response
       const { token, user } = response.data;
       if (!token || !user) throw new Error("Invalid response from server");
 
-      // Save to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("userId", user.id);
       localStorage.setItem("username", user.username);
       localStorage.setItem("isAdmin", user.isAdmin);
 
-      // Redirect to dashboard on success
       navigate("/dashboard");
     } catch (err) {
-      // Handle login errors
-      console.error("🚨 Login Error:", err.response?.data || err);
+      console.error("Login Error details:", err.response?.data);
       setError(err.response?.data?.error || "Login failed");
     }
   };

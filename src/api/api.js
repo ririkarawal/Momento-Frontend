@@ -27,12 +27,21 @@ const createReminder = (data) => axios.post(`${API_URL}/create_reminder`, data, 
 const updateReminder = (id, data) => axios.put(`${API_URL}/update_reminder/${id}`, data, { headers: getAuthHeaders() });
 const deleteReminder = (id) => axios.delete(`${API_URL}/delete_reminder/${id}`, { headers: getAuthHeaders() });
 
-const getUploads = () => axios.get(`${API_URL}/view_uploads`);
+const getUploads = () =>
+  axios.get(`${API_URL}/uploads/view_uploads`, {
+    headers: getAuthHeaders()
+  });
+
+const getUserUploads = (userId) =>
+  axios.get(`${API_URL}/uploads/user/${userId}`, {
+    headers: getAuthHeaders()
+  });
+
 const createUpload = (data) =>
-  axios.post(`${API_URL}/uploads/create_uploads`, data, {
-    headers: { 
+  axios.post(`${API_URL}/uploads/create`, data, {
+    headers: {
       "Content-Type": "multipart/form-data",
-      ...getAuthHeaders(),
+      ...getAuthHeaders()
     },
   });
 
@@ -50,11 +59,11 @@ const deleteUser = (id) => axios.delete(`${API_URL}/delete_users/${id}`, { heade
 const getCurrentUser = () => axios.get(`${API_URL}/users/me`, { headers: getAuthHeaders() });
 
 export {
-    getCategories, createCategory, updateCategory, deleteCategory,
-    getComments, createComment, updateComment, deleteComment,
-    getPins, createPin, updatePin, deletePin,
-    getReminders, createReminder, updateReminder, deleteReminder,
-    getUploads, createUpload, updateUpload, deleteUpload,
-    loginUser, registerUser, getUsers, createUser, updateUser, deleteUser,
-    getCurrentUser // ✅ Ensure this is exported
+  getCategories, createCategory, updateCategory, deleteCategory,
+  getComments, createComment, updateComment, deleteComment,
+  getPins, createPin, updatePin, deletePin,
+  getReminders, createReminder, updateReminder, deleteReminder,
+  getUploads, getUserUploads, createUpload, updateUpload, deleteUpload,
+  loginUser, registerUser, getUsers, createUser, updateUser, deleteUser,
+  getCurrentUser // ✅ Ensure this is exported
 };
