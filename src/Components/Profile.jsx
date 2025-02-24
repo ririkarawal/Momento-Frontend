@@ -9,6 +9,16 @@ const Profile = () => {
   const [uploads, setUploads] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const normalizeImagePath = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // Remove any leading 'uploads/' or 'uploads\'
+    const cleanPath = imagePath.replace(/^(uploads[/\\])?/, '');
+    
+    // Construct full URL
+    return `http://localhost:5000/uploads/${cleanPath}`;
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -69,8 +79,12 @@ const Profile = () => {
               uploads.map((upload) => (
                 <div key={upload.id} className="upload-item">
                   <img 
-                    src={`http://localhost:5000/${upload.imagePath}`} 
+                    src={normalizeImagePath(upload.imagePath)} 
                     alt={upload.description || 'Uploaded image'} 
+                    onError={(e) => {
+                      console.error("Profile Image failed:", e.target.src);
+                      e.target.style.display = 'none';
+                    }}
                   />
                   {upload.description && <p>{upload.description}</p>}
                 </div>

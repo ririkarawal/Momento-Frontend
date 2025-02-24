@@ -7,12 +7,28 @@ const Dashboard = () => {
   const [uploads, setUploads] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const normalizeImagePath = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // Remove any leading 'uploads/' or 'uploads\'
+    const cleanPath = imagePath.replace(/^(uploads[/\\])?/, '');
+    
+    // Construct full URL
+    return `http://localhost:5000/uploads/${cleanPath}`;
+  };
+
   useEffect(() => {
       const fetchAllUploads = async () => {
           try {
               const response = await getUploads();
               console.log("All uploads response:", response.data);
-              setUploads(response.data);
+              
+              // Validate uploads with image paths
+              const validUploads = response.data.filter(upload => 
+                upload.imagePath && upload.imagePath.trim() !== ''
+              );
+
+              setUploads(validUploads);
               setLoading(false);
           } catch (error) {
               console.error("Error fetching uploads:", error);
@@ -22,18 +38,6 @@ const Dashboard = () => {
 
       fetchAllUploads();
   }, []);
-
-  const handleImageError = (e) => {
-      console.log("Image failed to load:", e.target.src);
-      e.target.classList.add('image-error');
-  };
-
-  // Normalize image path to always use forward slashes and ensure uploads/ prefix
-  const normalizeImagePath = (imagePath) => {
-    // Remove any leading uploads\ or uploads/
-    const cleanPath = imagePath.replace(/^(uploads[\\/])?/, '');
-    return `http://localhost:5000/uploads/${cleanPath}`;
-  };
 
   return (
       <div className="dashboard">
@@ -49,7 +53,10 @@ const Dashboard = () => {
                                   src={normalizeImagePath(upload.imagePath)} 
                                   alt={upload.description || 'Uploaded image'} 
                                   className="img-box"
-                                  onError={handleImageError}
+                                  onError={(e) => {
+                                    console.error("Image failed to load:", e.target.src);
+                                    e.target.style.display = 'none';
+                                  }}
                               />
                           </div>
                           <div className="info">
