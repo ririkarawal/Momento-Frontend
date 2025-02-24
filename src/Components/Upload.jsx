@@ -1,12 +1,26 @@
-import { useState } from "react";
-import { createUpload } from "../api/api";
+import { useState, useEffect } from "react";
+import { createUpload, getCategories } from "../api/api";
 import "./../styles/Upload.css";
 
 const Upload = ({ onClose }) => {
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState("");
-  const [tags, setTags] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState([]);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    // Fetch categories when component mounts
+    const fetchCategories = async () => {
+      try {
+        const response = await getCategories();
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -25,13 +39,16 @@ const Upload = ({ onClose }) => {
     }
 
     try {
-      setUploading(true); // Set uploading state to true when starting upload
-      console.log("Uploading with userId:", userId);
+      setUploading(true);
+      console.log("Uploading with userId:", userId, "categoryId:", categoryId);
 
       const formData = new FormData();
       formData.append("image", file);
       formData.append("description", description || '');
       formData.append("userId", userId);
+      if (categoryId) {
+        formData.append("categoryId", categoryId);
+      }
 
       const response = await createUpload(formData);
       console.log("Upload response:", response.data);
@@ -41,7 +58,7 @@ const Upload = ({ onClose }) => {
       console.error("Upload error:", error);
       alert(`Upload failed: ${error?.response?.data?.error || "Unknown error"}`);
     } finally {
-      setUploading(false); // Reset uploading state whether successful or not
+      setUploading(false);
     }
   };
 
@@ -62,13 +79,20 @@ const Upload = ({ onClose }) => {
           onChange={(e) => setDescription(e.target.value)}
           disabled={uploading}
         />
-        <input
-          type="text"
-          placeholder="Tags (e.g., nature, travel)"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
+        {/* Category dropdown instead of tags */}
+        <select
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
           disabled={uploading}
-        />
+          className="category-select"
+        >
+          <option value="">Select Category</option>
+          {categories.map(category => (
+            <option key={category.id} value={category.id}>
+              {category.categoryName}
+            </option>
+          ))}
+        </select>
         <div className="buttons">
           <button 
             onClick={onClose} 

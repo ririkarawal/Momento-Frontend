@@ -1,14 +1,29 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { BiCategory } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
+import { getCategories } from "../api/api";
 import "./../styles/top.css";
 
 const Top = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-    const navigate = useNavigate(); // For redirection after logout
+    const [categories, setCategories] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Fetch categories when component mounts
+        const fetchCategories = async () => {
+            try {
+                const response = await getCategories();
+                setCategories(response.data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const toggleProfileDropdown = () => {
         setProfileDropdownOpen(!profileDropdownOpen);
@@ -32,16 +47,18 @@ const Top = () => {
         return () => document.removeEventListener("click", handleClickOutside);
     }, []);
 
-    // Handle logout
     const handleLogout = () => {
-        // Remove user data from localStorage
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
         localStorage.removeItem("username");
         localStorage.removeItem("isAdmin");
-
-        // Redirect to landing page (home page)
         navigate("/");
+    };
+    
+    const handleCategorySelect = (categoryId) => {
+        // Navigate to a filtered page or update the current page
+        navigate(`/category/${categoryId}`);
+        setCategoryDropdownOpen(false);
     };
 
     return (
@@ -62,25 +79,29 @@ const Top = () => {
             </div>
 
             <div className="nav-icons">
-                {/* Category Dropdown */}
                 <div className="dropdown">
                     <BiCategory size={30} className="icon" onClick={toggleCategoryDropdown} />
                     {categoryDropdownOpen && (
                         <div className="dropdown-menu">
-                            <a href="#">Category 1</a>
-                            <a href="#">Category 2</a>
-                            <a href="#">Category 3</a>
+                            {categories.map(category => (
+                                <a 
+                                    key={category.id} 
+                                    href="#"
+                                    onClick={() => handleCategorySelect(category.id)}
+                                >
+                                    {category.categoryName}
+                                </a>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* Profile Dropdown */}
                 <div className="dropdown">
                     <CgProfile size={30} className="icon" onClick={toggleProfileDropdown} />
                     {profileDropdownOpen && (
                         <div className="dropdown-menu">
-                            <Link to="/profile">Profile</Link> {/* Navigate to Profile Page */}
-                            <a href="#" onClick={handleLogout}>Logout</a> {/* Handle Logout */}
+                            <Link to="/profile">Profile</Link>
+                            <a href="#" onClick={handleLogout}>Logout</a>
                         </div>
                     )}
                 </div>

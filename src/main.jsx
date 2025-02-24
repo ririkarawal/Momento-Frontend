@@ -9,22 +9,33 @@ import Dashboard from "./Components/Dashboard";
 import Header from "./Components/Header";
 import Sidebar from "./Components/Sidebar";
 import Profile from "./Components/Profile";
+import CategoryPage from "./Components/CategoryPage";
 
 const App = () => {
   const location = useLocation();
-
+  
+  const isCategoryPage = location.pathname.startsWith('/category/');
+  
+  const showSidebar = location.pathname === "/dashboard" || 
+                      location.pathname === "/profile" || 
+                      isCategoryPage;
+  
+  const hideHeader = location.pathname === "/dashboard" || 
+                     location.pathname === "/profile" || 
+                     isCategoryPage;
+  
   return (
     <div className="app-container">
       {/* Sidebar should be properly wrapped */}
-      {(location.pathname === "/dashboard" || location.pathname === "/profile") && (
+      {showSidebar && (
         <div className="sidebar-wrapper">
           <Sidebar />
         </div>
       )}
-
-      {/* Show Header for all pages except Dashboard and Profile */}
-      {!(location.pathname === "/dashboard" || location.pathname === "/profile") && <Header />}
-
+      
+      {/* Show Header for all pages except Dashboard, Profile, and Category */}
+      {!hideHeader && <Header />}
+      
       <div className="content-wrapper">
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -32,6 +43,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/category/:categoryId" element={<CategoryPage />} />
         </Routes>
       </div>
     </div>
