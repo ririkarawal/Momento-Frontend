@@ -50,6 +50,8 @@ const getUploadsByCategory = (categoryId) =>
     headers: getAuthHeaders()
   });
 
+
+
 const updateUpload = (id, data) => axios.put(`${API_URL}/uploads/update_uploads/${id}`, data, { headers: getAuthHeaders() });
 const deleteUpload = (id) => axios.delete(`${API_URL}/uploads/delete_uploads/${id}`, { headers: getAuthHeaders() });
 
