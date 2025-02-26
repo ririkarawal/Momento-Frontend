@@ -17,11 +17,17 @@ const createComment = (data) => axios.post(`${API_URL}/comments/create_comment`,
 const updateComment = (id, data) => axios.put(`${API_URL}/comments/update_comment/${id}`, data, { headers: getAuthHeaders() });
 const deleteComment = (id) => axios.delete(`${API_URL}/comments/delete_comment/${id}`, { headers: getAuthHeaders() });
 
-const getPins = () => axios.get(`${API_URL}/pins/view_pin`);
-const createPin = (data) => axios.post(`${API_URL}/pins/create_pin`, data, { headers: getAuthHeaders() });
-const updatePin = (id, data) => axios.put(`${API_URL}/pins/update_pin/${id}`, data, { headers: getAuthHeaders() });
-const deletePin = (id) => axios.delete(`${API_URL}/pins/delete_pin/${id}`, { headers: getAuthHeaders() });
+const getPins = () => axios.get(`${API_URL}/pins/view_pin`, { 
+  headers: getAuthHeaders() 
+});
 
+const createPin = (data) => axios.post(`${API_URL}/pins/create_pin`, data, { 
+  headers: getAuthHeaders() 
+});
+const updatePin = (id, data) => axios.put(`${API_URL}/pins/update_pin/${id}`, data, { headers: getAuthHeaders() });
+const deletePin = (id) => axios.delete(`${API_URL}/pins/delete_pin/${id}`, { 
+  headers: getAuthHeaders() 
+});
 const getReminders = () => axios.get(`${API_URL}/reminders/view_reminder`);
 const createReminder = (data) => axios.post(`${API_URL}/reminders/create_reminder`, data, { headers: getAuthHeaders() });
 const updateReminder = (id, data) => axios.put(`${API_URL}/reminders/update_reminder/${id}`, data, { headers: getAuthHeaders() });

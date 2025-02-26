@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getUploads, getComments, createComment, deleteComment, getCurrentUser } from "../api/api";
+import { getUploads, getComments, createComment, deleteComment, getCurrentUser, createPin, getPins, deletePin } from "../api/api";
 import "./../styles/Dashboard.css";
 import Top from "./Top.jsx";
 
@@ -11,7 +11,7 @@ const Dashboard = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [pinnedItems, setPinnedItems] = useState({});
 
   // Helper function to get token from localStorage
   const getStoredToken = () => {
@@ -22,11 +22,7 @@ const Dashboard = () => {
 
   const normalizeImagePath = (imagePath) => {
     if (!imagePath) return null;
-
-    // Remove any leading 'uploads/' or 'uploads\'
     const cleanPath = imagePath.replace(/^(uploads[/\\])?/, '');
-
-    // Construct full URL
     return `http://localhost:5000/uploads/${cleanPath}`;
   };
 
@@ -49,24 +45,30 @@ const Dashboard = () => {
       }
     };
 
+    // Load pins to check which images are pinned
+    const fetchUserPins = async () => {
+      try {
+        const pinsResponse = await getPins();
+
+        // Create a map of pinned upload IDs
+        const pinMap = {};
+        pinsResponse.data.forEach(pin => {
+          pinMap[pin.uploadId] = pin.id; // Store pin ID for each pinned upload
+        });
+        setPinnedItems(pinMap);
+
+      } catch (error) {
+        console.error("Error fetching pins:", error);
+      }
+    };
+
     // Check if we have a token first
     const token = getStoredToken();
     if (token) {
       console.log("Token found, fetching user data");
       // Try to fetch current user if we have a token
-      getCurrentUser()
-        .then(response => {
-          console.log("Current user data:", response.data);
-          setCurrentUser(response.data);
-        })
-        .catch(error => {
-          console.error("Error fetching current user:", error);
-          // Failed to get user - the token might be invalid
-          if (error.response?.status === 401) {
-            console.log("Invalid token, clearing localStorage");
-            localStorage.removeItem("token");
-          }
-        });
+      getCurrentUser();
+      fetchUserPins();
     } else {
       console.log("No token found, user not logged in");
     }
@@ -75,9 +77,7 @@ const Dashboard = () => {
   }, []);
 
   const handleLikeClick = (uploadId, e) => {
-    // Prevent opening the preview when like button is clicked
     e.stopPropagation();
-    // TODO: Implement the logic to handle the like button click
     console.log(`Like button clicked for upload with ID: ${uploadId}`);
   };
 
@@ -95,7 +95,6 @@ const Dashboard = () => {
   const fetchComments = async (uploadId) => {
     setCommentLoading(true);
     try {
-      // Get comments for this specific upload
       const commentsData = await getCommentsByUploadId(uploadId);
       console.log("Fetched comments:", commentsData);
       setComments(commentsData);
@@ -110,8 +109,7 @@ const Dashboard = () => {
   const handleImageClick = async (upload) => {
     setSelectedUpload(upload);
     setIsPreviewOpen(true);
-    
-    // Fetch comments for this upload
+
     if (upload && upload.id) {
       fetchComments(upload.id);
     }
@@ -119,35 +117,80 @@ const Dashboard = () => {
 
   const closePreview = () => {
     setIsPreviewOpen(false);
-    // Add a small delay before removing the selected upload
-    // This keeps the content visible during the transition
     setTimeout(() => {
       setSelectedUpload(null);
       setComments([]);
     }, 300);
   };
 
+  const isImagePinned = (uploadId) => {
+    return pinnedItems[uploadId] !== undefined;
+  };
+
+  const togglePin = async (e) => {
+    e.stopPropagation();
+
+    if (!selectedUpload) return;
+
+    // Check if user is logged in
+    if (!getStoredToken()) {
+      alert("You need to be logged in to pin images.");
+      return;
+    }
+
+    try {
+      const uploadId = selectedUpload.id;
+      const isPinned = isImagePinned(uploadId);
+
+      if (isPinned) {
+        // Unpin the image
+        const pinId = pinnedItems[uploadId];
+        await deletePin(pinId);
+
+        // Update state
+        const newPinnedItems = { ...pinnedItems };
+        delete newPinnedItems[uploadId];
+        setPinnedItems(newPinnedItems);
+      } else {
+        // Pin the image
+        const pinData = { uploadId };
+        const response = await createPin(pinData);
+
+        // Update state with the new pin
+        setPinnedItems({
+          ...pinnedItems,
+          [uploadId]: response.data.id
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+
+      if (error.response?.status === 401) {
+        alert("You need to be logged in to pin/unpin images.");
+      } else {
+        alert("Failed to pin/unpin image. Please try again.");
+      }
+    }
+  };
+
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || !selectedUpload) return;
-    
+
     try {
-      // Format data for the API
       const formattedData = {
         text: newComment,
         uploadId: selectedUpload.id
       };
-      
-      // Send to backend
+
       const response = await createComment(formattedData);
       const addedComment = response.data;
-      
-      // Update the comments list
+
       setComments([...comments, addedComment]);
       setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
-      
+
       if (error.response?.status === 401) {
         alert("You need to be logged in to add comments.");
       } else {
@@ -157,36 +200,26 @@ const Dashboard = () => {
   };
 
   const handleDeleteComment = async (commentId, e) => {
-    // Stop event propagation to prevent parent handlers from firing
     if (e) e.stopPropagation();
-    
-    // Check if user is logged in
+
     if (!getStoredToken()) {
       alert("You need to be logged in to delete comments.");
       return;
     }
-    
+
     if (!window.confirm("Are you sure you want to delete this comment?")) {
       return;
     }
-    
+
     try {
-      console.log("Attempting to delete comment with ID:", commentId);
-      
-      // Call the delete API
       await deleteComment(commentId);
-      console.log("Comment deleted successfully on the server");
-      
-      // Remove the deleted comment from the state
+
       setComments(comments.filter(comment => comment.id !== commentId));
-      console.log("Comment removed from UI");
-      
+
       alert("Comment deleted successfully!");
     } catch (error) {
       console.error("Error deleting comment:", error);
-      console.error("Error response:", error.response?.data);
-      
-      // If unauthorized, show a more specific message
+
       if (error.response?.status === 401) {
         alert("You need to be logged in to delete comments.");
       } else {
@@ -195,34 +228,18 @@ const Dashboard = () => {
     }
   };
 
-  // Check if the current user can delete a comment
-  const canDeleteComment = (comment) => {
-    if (!currentUser || !comment.User) return false;
-    
-    // User can delete if they are the comment author
-    if (comment.userId === currentUser.id) return true;
-    
-    // User can delete if they are the upload owner
-    if (selectedUpload && selectedUpload.userId === currentUser.id) return true;
-    
-    // Admin can delete any comment
-    if (currentUser.isAdmin) return true;
-    
-    return false;
-  };
-
   return (
     <div className="dashboard">
       <Top />
-      
+
       <div className={`dashboard-content ${isPreviewOpen ? 'with-preview' : ''}`}>
         <div className={`grid ${isPreviewOpen ? 'shifted' : ''}`}>
           {loading ? (
             <p>Loading...</p>
           ) : (
             uploads.map((upload) => (
-              <div 
-                className="card" 
+              <div
+                className="card"
                 key={upload.id}
                 onClick={() => handleImageClick(upload)}
               >
@@ -253,13 +270,20 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Preview Panel */}
         {selectedUpload && (
           <div className={`preview-panel ${isPreviewOpen ? 'open' : ''}`}>
             <button className="close-preview" onClick={closePreview}>
               &times;
             </button>
-            
+
+            <button
+              className={`pin-button ${isImagePinned(selectedUpload.id) ? 'pinned' : ''}`}
+              onClick={togglePin}
+              title={isImagePinned(selectedUpload.id) ? "Unpin image" : "Pin image"}
+            >
+              📌
+            </button>
+
             <div className="preview-content">
               <div className="preview-image-container">
                 <img
@@ -268,7 +292,7 @@ const Dashboard = () => {
                   className="preview-image"
                 />
               </div>
-              
+
               <div className="preview-details">
                 <div className="preview-header">
                   <h2>{selectedUpload.title || "Untitled"}</h2>
@@ -276,7 +300,7 @@ const Dashboard = () => {
                     By {selectedUpload.User?.username || "Unknown User"}
                   </div>
                 </div>
-                
+
                 <div className="preview-description">
                   <p>{selectedUpload.description || "No description available."}</p>
                 </div>
@@ -287,7 +311,7 @@ const Dashboard = () => {
                   </div>
                   <div className="actions">
                     <button className="action-button">
-                      {selectedUpload.isLiked ? "❤️" : "🤍"} 
+                      {selectedUpload.isLiked ? "❤️" : "🤍"}
                       {selectedUpload.likes || 0}
                     </button>
                     <button className="action-button">
@@ -295,10 +319,10 @@ const Dashboard = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="comments-section">
                   <h3>Comments</h3>
-                  
+
                   <div className="comments-list">
                     {commentLoading ? (
                       <p className="loading-comments">Loading comments...</p>
@@ -310,9 +334,8 @@ const Dashboard = () => {
                             <span className="comment-time">
                               {new Date(comment.createdAt).toLocaleDateString()}
                             </span>
-                            {/* Show delete button for all comments during testing */}
-                            <button 
-                              className="delete-comment-btn" 
+                            <button
+                              className="delete-comment-btn"
                               onClick={(e) => handleDeleteComment(comment.id, e)}
                               style={{
                                 backgroundColor: "#ff4d4d",
@@ -335,7 +358,7 @@ const Dashboard = () => {
                       <p className="no-comments">No comments yet. Be the first to comment!</p>
                     )}
                   </div>
-                  
+
                   <form className="comment-form" onSubmit={handleCommentSubmit}>
                     <textarea
                       placeholder="Add a comment..."
