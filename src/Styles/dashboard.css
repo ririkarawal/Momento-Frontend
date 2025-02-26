@@ -1,7 +1,9 @@
 .dashboard {
   display: flex;
-  margin-top: 80px; /* Ensures it starts below the header */
-  margin-left: 200px; /* Leaves space for expanded sidebar */
+  margin-top: 80px;
+  /* Ensures it starts below the header */
+  margin-left: 200px;
+  /* Leaves space for expanded sidebar */
   padding: 16px;
   flex-direction: column;
   align-items: center;
@@ -9,7 +11,7 @@
 }
 
 /* Adjust content margin when sidebar is collapsed */
-.sidebar.collapsed + .dashboard {
+.sidebar.collapsed+.dashboard {
   margin-left: 50px;
 }
 
@@ -24,7 +26,8 @@
 .dashboard-content.with-preview {
   display: flex;
   max-width: 1800px;
-  align-items: flex-start; /* Keep everything aligned to the top */
+  align-items: flex-start;
+  /* Keep everything aligned to the top */
 }
 
 /* Grid Layout */
@@ -34,7 +37,8 @@
   gap: 30px;
   width: 100%;
   transition: transform 0.4s ease-out, width 0.4s ease-out;
-  align-self: flex-start; /* Keep grid at the top */
+  align-self: flex-start;
+  /* Keep grid at the top */
 }
 
 /* Grid when preview is open */
@@ -67,14 +71,15 @@
 /* Image Wrapper */
 .img-wrap {
   position: relative;
-  padding-top: 100%; /* 1:1 aspect ratio */
+  padding-top: 100%;
+  /* 1:1 aspect ratio */
 }
 
 /* Image Box */
 .img-box {
   position: absolute;
   inset: 0;
-  height: 120%; 
+  height: 120%;
   width: 100%;
   background-color: #eee;
   display: flex;
@@ -83,7 +88,8 @@
   color: #666;
   border: 1px solid #ccc;
   border-radius: 4px;
-  object-fit: cover; /* Ensures images maintain aspect ratio */
+  object-fit: cover;
+  /* Ensures images maintain aspect ratio */
 }
 
 /* Follow Button */
@@ -106,7 +112,7 @@
 
 /* Card Info */
 .info {
-  padding: 32px 0; 
+  padding: 32px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -133,7 +139,8 @@
   cursor: pointer;
   transition: color 0.3s;
   font-size: 18px;
-  z-index: 2; /* Ensure it's above the card click area */
+  z-index: 2;
+  /* Ensure it's above the card click area */
 }
 
 .like:hover {
@@ -233,12 +240,7 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.preview-header h2 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-}
+
 
 .preview-author {
   color: #666;
@@ -476,7 +478,7 @@
   .grid.shifted {
     width: 55%;
   }
-  
+
   .preview-panel {
     width: 45%;
   }
@@ -486,11 +488,11 @@
   .dashboard-content.with-preview {
     flex-direction: column;
   }
-  
+
   .grid.shifted {
     width: 100%;
   }
-  
+
   .preview-panel {
     width: 100%;
     margin-left: 0;
@@ -501,9 +503,10 @@
 
 @media (max-width: 768px) {
   .dashboard {
-    margin-left: 50px; /* Adjust for smaller screens */
+    margin-left: 50px;
+    /* Adjust for smaller screens */
   }
-  
+
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
@@ -511,7 +514,8 @@
 
 .pin-button {
   position: absolute;
-  top: 60px; /* Position it directly below the close button */
+  top: 60px;
+  /* Position it directly below the close button */
   right: 15px;
   background: rgba(245, 245, 245, 0.8);
   border: none;

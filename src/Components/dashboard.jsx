@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { SlUserFollow, SlUserFollowing } from "react-icons/sl";
 import { getUploads, getComments, createComment, deleteComment, getCurrentUser, createPin, getPins, deletePin } from "../api/api";
 import "./../styles/Dashboard.css";
 import Top from "./Top.jsx";
@@ -12,8 +13,8 @@ const Dashboard = () => {
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
   const [pinnedItems, setPinnedItems] = useState({});
+  const [followedUsers, setFollowedUsers] = useState({});
 
-  // Helper function to get token from localStorage
   const getStoredToken = () => {
     const token = localStorage.getItem("token");
     console.log("Current token:", token ? "Found" : "Not found");
@@ -26,13 +27,21 @@ const Dashboard = () => {
     return `http://localhost:5000/uploads/${cleanPath}`;
   };
 
+  const toggleFollow = (userId, username, e) => {
+    e.stopPropagation();
+    setFollowedUsers(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }));
+    console.log(`${followedUsers[userId] ? 'Unfollowed' : 'Followed'} user: ${username}`);
+  };
+
   useEffect(() => {
     const fetchAllUploads = async () => {
       try {
         const response = await getUploads();
         console.log("All uploads response:", response.data);
 
-        // Validate uploads with image paths
         const validUploads = response.data.filter(upload =>
           upload.imagePath && upload.imagePath.trim() !== ''
         );
@@ -45,28 +54,22 @@ const Dashboard = () => {
       }
     };
 
-    // Load pins to check which images are pinned
     const fetchUserPins = async () => {
       try {
         const pinsResponse = await getPins();
-
-        // Create a map of pinned upload IDs
         const pinMap = {};
         pinsResponse.data.forEach(pin => {
-          pinMap[pin.uploadId] = pin.id; // Store pin ID for each pinned upload
+          pinMap[pin.uploadId] = pin.id;
         });
         setPinnedItems(pinMap);
-
       } catch (error) {
         console.error("Error fetching pins:", error);
       }
     };
 
-    // Check if we have a token first
     const token = getStoredToken();
     if (token) {
       console.log("Token found, fetching user data");
-      // Try to fetch current user if we have a token
       getCurrentUser();
       fetchUserPins();
     } else {
@@ -81,7 +84,6 @@ const Dashboard = () => {
     console.log(`Like button clicked for upload with ID: ${uploadId}`);
   };
 
-  // Function to get comments filtered by upload ID
   const getCommentsByUploadId = async (uploadId) => {
     try {
       const response = await getComments();
@@ -132,7 +134,6 @@ const Dashboard = () => {
 
     if (!selectedUpload) return;
 
-    // Check if user is logged in
     if (!getStoredToken()) {
       alert("You need to be logged in to pin images.");
       return;
@@ -143,29 +144,36 @@ const Dashboard = () => {
       const isPinned = isImagePinned(uploadId);
 
       if (isPinned) {
-        // Unpin the image
         const pinId = pinnedItems[uploadId];
+
+        // Log the pinId before deletion
+        console.log('Attempting to delete pin with ID:', pinId);
+
         await deletePin(pinId);
 
-        // Update state
         const newPinnedItems = { ...pinnedItems };
         delete newPinnedItems[uploadId];
         setPinnedItems(newPinnedItems);
       } else {
-        // Pin the image
         const pinData = { uploadId };
         const response = await createPin(pinData);
 
-        // Update state with the new pin
         setPinnedItems({
           ...pinnedItems,
           [uploadId]: response.data.id
         });
       }
     } catch (error) {
-      console.error("Error toggling pin:", error);
+      console.error("Full error details:", error);
+      console.error("Error response:", error.response);
 
-      if (error.response?.status === 401) {
+      if (error.response?.status === 404) {
+        alert("Pin not found. It may have been already deleted.");
+        // Remove the pin from local state
+        const newPinnedItems = { ...pinnedItems };
+        delete newPinnedItems[selectedUpload.id];
+        setPinnedItems(newPinnedItems);
+      } else if (error.response?.status === 401) {
         alert("You need to be logged in to pin/unpin images.");
       } else {
         alert("Failed to pin/unpin image. Please try again.");
@@ -259,10 +267,10 @@ const Dashboard = () => {
                     {upload.User?.username || "Unknown User"}
                   </span>
                   <button
-                    className="like"
-                    onClick={(e) => handleLikeClick(upload.id, e)}
+                    className="follow"
+                    onClick={(e) => toggleFollow(upload.User?.id, upload.User?.username, e)}
                   >
-                    {upload.isLiked ? "❤️" : "🤍"}
+                    {followedUsers[upload.User?.id] ? <SlUserFollowing /> : <SlUserFollow />}
                   </button>
                 </div>
               </div>
@@ -295,7 +303,6 @@ const Dashboard = () => {
 
               <div className="preview-details">
                 <div className="preview-header">
-                  <h2>{selectedUpload.title || "Untitled"}</h2>
                   <div className="preview-author">
                     By {selectedUpload.User?.username || "Unknown User"}
                   </div>
@@ -310,9 +317,11 @@ const Dashboard = () => {
                     {new Date(selectedUpload.createdAt).toLocaleDateString()}
                   </div>
                   <div className="actions">
-                    <button className="action-button">
-                      {selectedUpload.isLiked ? "❤️" : "🤍"}
-                      {selectedUpload.likes || 0}
+                    <button
+                      className="action-button"
+                      onClick={(e) => toggleFollow(selectedUpload.User?.id, selectedUpload.User?.username, e)}
+                    >
+                      {followedUsers[selectedUpload.User?.id] ? <SlUserFollowing /> : <SlUserFollow />}
                     </button>
                     <button className="action-button">
                       💬 {comments.length}
