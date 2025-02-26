@@ -27,8 +27,8 @@ const Register = () => {
       localStorage.setItem("username", savedUsername);
       localStorage.setItem("isAdmin", isAdmin);
 
-      // Redirect to dashboard on success
-      navigate("/dashboard");
+      // Redirect to login on success
+      navigate("/login");
     } catch (err) {
       // Handle registration errors
       console.error("🚨 Registration Error:", err.response?.data || err);
