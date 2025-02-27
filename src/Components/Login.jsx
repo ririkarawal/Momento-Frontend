@@ -12,7 +12,6 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Add console log to see what's being sent
       console.log("Sending login data:", { email, password });
 
       const response = await loginUser({ email, password });
@@ -26,7 +25,12 @@ const Login = () => {
       localStorage.setItem("username", user.username);
       localStorage.setItem("isAdmin", user.isAdmin);
 
-      navigate("/dashboard");
+      // Navigate based on user role
+      if (user.isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       console.error("Login Error details:", err.response?.data);
       setError(err.response?.data?.error || "Login failed");

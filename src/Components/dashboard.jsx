@@ -14,10 +14,10 @@ const Dashboard = () => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [pinnedItems, setPinnedItems] = useState({});
   const [followedUsers, setFollowedUsers] = useState({});
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const getStoredToken = () => {
     const token = localStorage.getItem("token");
-    console.log("Current token:", token ? "Found" : "Not found");
     return token;
   };
 
@@ -33,19 +33,17 @@ const Dashboard = () => {
       ...prev,
       [userId]: !prev[userId]
     }));
-    console.log(`${followedUsers[userId] ? 'Unfollowed' : 'Followed'} user: ${username}`);
   };
 
   useEffect(() => {
     const fetchAllUploads = async () => {
       try {
         const response = await getUploads();
-        console.log("All uploads response:", response.data);
+        console.log("Uploads response:", response.data);
 
         const validUploads = response.data.filter(upload =>
           upload.imagePath && upload.imagePath.trim() !== ''
         );
-
         setUploads(validUploads);
         setLoading(false);
       } catch (error) {
@@ -56,33 +54,58 @@ const Dashboard = () => {
 
     const fetchUserPins = async () => {
       try {
+        const token = getStoredToken();
+        if (!token) {
+          setIsAuthenticated(false);
+          console.log("No token, user not authenticated");
+          return;
+        }
+
+        setIsAuthenticated(true);
         const pinsResponse = await getPins();
+        console.log("Pins response:", pinsResponse.data);
+
+        // Create a map of pinned upload IDs
         const pinMap = {};
         pinsResponse.data.forEach(pin => {
-          pinMap[pin.uploadId] = pin.id;
+          // Handle different capitalizations and verify data
+          const uploadId = pin.uploadId || pin.uploadid ||
+            (pin.Upload && pin.Upload.id) ||
+            (pin.upload && pin.upload.id);
+
+          if (uploadId) {
+            pinMap[uploadId] = pin.id;
+          }
         });
+
+        console.log("Pin map:", pinMap);
         setPinnedItems(pinMap);
       } catch (error) {
         console.error("Error fetching pins:", error);
+        // If 401, user is not authenticated
+        if (error.response?.status === 401) {
+          setIsAuthenticated(false);
+        }
       }
     };
 
-    const token = getStoredToken();
-    if (token) {
-      console.log("Token found, fetching user data");
-      getCurrentUser();
-      fetchUserPins();
-    } else {
-      console.log("No token found, user not logged in");
-    }
-
     fetchAllUploads();
-  }, []);
+    fetchUserPins();
 
-  const handleLikeClick = (uploadId, e) => {
-    e.stopPropagation();
-    console.log(`Like button clicked for upload with ID: ${uploadId}`);
-  };
+    // Listen for storage events for pin updates
+    const handleStorageChange = () => {
+      if (localStorage.getItem('pinsUpdated') === 'true') {
+        localStorage.removeItem('pinsUpdated');
+        fetchUserPins();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const getCommentsByUploadId = async (uploadId) => {
     try {
@@ -98,7 +121,6 @@ const Dashboard = () => {
     setCommentLoading(true);
     try {
       const commentsData = await getCommentsByUploadId(uploadId);
-      console.log("Fetched comments:", commentsData);
       setComments(commentsData);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -126,64 +148,114 @@ const Dashboard = () => {
   };
 
   const isImagePinned = (uploadId) => {
-    return pinnedItems[uploadId] !== undefined;
+    return Boolean(pinnedItems[uploadId]);
   };
 
   const togglePin = async (e) => {
     e.stopPropagation();
 
-    if (!selectedUpload) return;
+    if (!selectedUpload) {
+      console.error('No upload selected');
+      return;
+    }
 
-    if (!getStoredToken()) {
-      alert("You need to be logged in to pin images.");
+    if (!isAuthenticated) {
+      alert("You need to be logged in to pin/unpin images.");
       return;
     }
 
     try {
       const uploadId = selectedUpload.id;
-      const isPinned = isImagePinned(uploadId);
 
-      if (isPinned) {
+      if (isImagePinned(uploadId)) {
+        // Get the pin ID for this upload
         const pinId = pinnedItems[uploadId];
 
-        // Log the pinId before deletion
-        console.log('Attempting to delete pin with ID:', pinId);
+        if (!pinId) {
+          console.error('Pin ID not found for upload', uploadId);
+          return;
+        }
 
-        await deletePin(pinId);
+        console.log('Attempting to unpin:', { pinId, uploadId });
 
-        const newPinnedItems = { ...pinnedItems };
-        delete newPinnedItems[uploadId];
-        setPinnedItems(newPinnedItems);
+        try {
+          await deletePin(pinId);
+
+          // Update pinned items state
+          setPinnedItems(prevPins => {
+            const updatedPins = { ...prevPins };
+            delete updatedPins[uploadId];
+            return updatedPins;
+          });
+
+          // Notify other components
+          localStorage.setItem('pinsUpdated', 'true');
+          window.dispatchEvent(new Event('storage'));
+
+          alert('Image unpinned successfully');
+        } catch (error) {
+          console.error('Error deleting pin:', error);
+
+          // If 404, update UI anyway
+          if (error.response?.status === 404) {
+            setPinnedItems(prevPins => {
+              const updatedPins = { ...prevPins };
+              delete updatedPins[uploadId];
+              return updatedPins;
+            });
+            alert('Pin already removed');
+          } else {
+            alert(error.response?.data?.message || 'Failed to unpin image');
+          }
+        }
       } else {
-        const pinData = { uploadId };
-        const response = await createPin(pinData);
+        // Create a new pin
+        try {
+          console.log('Creating pin for upload ID:', uploadId);
+          const response = await createPin({ uploadId: uploadId });
+          console.log('Pin creation response:', response.data);
 
-        setPinnedItems({
-          ...pinnedItems,
-          [uploadId]: response.data.id
-        });
+          // Update pinned items state
+          setPinnedItems(prevPins => ({
+            ...prevPins,
+            [uploadId]: response.data.id
+          }));
+
+          // Notify other components
+          localStorage.setItem('pinsUpdated', 'true');
+          window.dispatchEvent(new Event('storage'));
+
+          alert('Image pinned successfully');
+        } catch (error) {
+          console.error('Error creating pin:', error.response?.data || error);
+
+          // If already pinned, update the UI
+          if (error.response?.status === 409) {
+            const existingPin = error.response.data.pin;
+            setPinnedItems(prevPins => ({
+              ...prevPins,
+              [uploadId]: existingPin.id
+            }));
+            alert('You have already pinned this image');
+          } else {
+            alert(error.response?.data?.message || 'Failed to pin image');
+          }
+        }
       }
     } catch (error) {
-      console.error("Full error details:", error);
-      console.error("Error response:", error.response);
-
-      if (error.response?.status === 404) {
-        alert("Pin not found. It may have been already deleted.");
-        // Remove the pin from local state
-        const newPinnedItems = { ...pinnedItems };
-        delete newPinnedItems[selectedUpload.id];
-        setPinnedItems(newPinnedItems);
-      } else if (error.response?.status === 401) {
-        alert("You need to be logged in to pin/unpin images.");
-      } else {
-        alert("Failed to pin/unpin image. Please try again.");
-      }
+      console.error("Unexpected error during pin toggle:", error);
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || !selectedUpload) return;
+
+    if (!isAuthenticated) {
+      alert("You need to be logged in to add comments.");
+      return;
+    }
 
     try {
       const formattedData = {
@@ -210,7 +282,7 @@ const Dashboard = () => {
   const handleDeleteComment = async (commentId, e) => {
     if (e) e.stopPropagation();
 
-    if (!getStoredToken()) {
+    if (!isAuthenticated) {
       alert("You need to be logged in to delete comments.");
       return;
     }
@@ -221,9 +293,7 @@ const Dashboard = () => {
 
     try {
       await deleteComment(commentId);
-
       setComments(comments.filter(comment => comment.id !== commentId));
-
       alert("Comment deleted successfully!");
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -346,16 +416,6 @@ const Dashboard = () => {
                             <button
                               className="delete-comment-btn"
                               onClick={(e) => handleDeleteComment(comment.id, e)}
-                              style={{
-                                backgroundColor: "#ff4d4d",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                padding: "2px 8px",
-                                cursor: "pointer",
-                                marginLeft: "10px",
-                                fontWeight: "bold"
-                              }}
                             >
                               Delete
                             </button>
