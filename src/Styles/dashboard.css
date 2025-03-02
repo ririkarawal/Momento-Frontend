@@ -1,8 +1,8 @@
 .dashboard {
   display: flex;
-  margin-top: 80px;
+  margin-top: 0px;
   /* Ensures it starts below the header */
-  margin-left: 200px;
+  margin-left: 150px;
   /* Leaves space for expanded sidebar */
   padding: 16px;
   flex-direction: column;
@@ -43,7 +43,7 @@
 
 /* Grid when preview is open */
 .grid.shifted {
-  width: 65%;
+  width: 75%;
   grid-template-columns: repeat(3, 1fr);
   /* Fixed positioning to keep grid at top */
   position: relative;

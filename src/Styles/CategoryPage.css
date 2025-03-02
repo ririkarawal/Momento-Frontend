@@ -1,7 +1,7 @@
 
 .category-page {
     display: flex;
-    margin-top: 80px; /* Ensures it starts below the header */
+    margin-top: 0px; /* Ensures it starts below the header */
     margin-left: 200px; /* Leaves space for expanded sidebar */
     padding: 16px;
     flex-direction: column;
