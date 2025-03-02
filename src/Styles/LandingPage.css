@@ -1,66 +1,157 @@
-.landing-page {
-  font-family: "Poppins", sans-serif;
-  color: #333;
-}
-
 .hero {
-  background: url("/back.jpg") center/cover no-repeat;
-  height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
+  background-color: hsl(24, 100%, 84%);
+  padding: 100px 0;
 }
 
 .hero-content {
-  background: rgba(24, 23, 23, 0.608);
-  padding: 20px;
-  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.cta-button {
-  background: #ff4d6d;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.gallery {
-  background: hsl(24, 100%, 84%);
-  color: black;
+.hero-gif {
+  flex: 1;
   text-align: center;
-  padding: 30px;
 }
-.gallery h2 {
+
+.hero-gif img {
+  max-width: 100%;
+  height: auto;
+}
+
+.hero-text {
+  flex: 1;
+  padding-left: 40px;
+}
+
+.hero h1 {
+  font-size: 36px;
   margin-bottom: 20px;
 }
-.gallery p {
-  margin-bottom: 20px;}
 
-.gallery-container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
+.hero p {
+  font-size: 18px;
+  margin-bottom: 30px;
 }
 
-.gallery-item {
-  background: hsl(24, 100%, 84%);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+.cta-buttons {
   display: flex;
-  flex-direction: column;
+  gap: 15px;
+}
+
+.register-button,
+.login-button {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  font-weight: 600;
+  text-align: center;
+}
+
+.register-button {
+  background-color: #e67e22;
+  color: hsl(24, 100%, 84%);
+  border: 2px solid #e67e22;
+}
+
+.login-button {
+  background-color: transparent;
+  color: #e67e22;
+  border: 2px solid #e67e22;
+}
+
+.register-button:hover {
+  background-color: #e67e22;
+  border-color: #e67e22;
+}
+
+.login-button:hover {
+  background-color: rgba(255, 107, 107, 0.1);
+}
+
+/* About Us Section */
+.about-us {
+  background-color: hsl(24, 100%, 84%);
+  padding: 100px 0;
+}
+
+.about-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 50px;
+}
+
+.about-text {
+  flex: 1;
+}
+
+.about-text h2 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.about-text > p {
+  font-size: 18px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.about-highlights {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.highlight {
+  flex: 1;
+  text-align: center;
+  padding: 20px;
+  background-color: hsl(24, 100%, 84%);
+  border-radius: 8px;
+  margin: 0 10px;
+  transition: transform 0.3s ease;
+}
+
+.highlight:hover {
+  transform: translateY(-10px);
+}
+
+.highlight-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.highlight h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.highlight p {
+  font-size: 14px;
+  color: #666;
 }
 
 
-.gallery-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    flex-grow: 1;
+
+.about-image {
+  flex: 1;
+}
+
+.about-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
