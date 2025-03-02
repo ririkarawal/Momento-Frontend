@@ -14,35 +14,7 @@
 
 
 
-/* Centering search bar */
-.search-bar-container {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    background: white;
-    padding: px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-}
 
-.search-input {
-    width: 50%;
-    padding: 8px 40px 8px 20px;
-    font-size: 16px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    outline: none;
-}
-
-.search-icon {
-    position: absolute;
-    right: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    color: #888;
-}
 
 /* Navigation icons */
 .nav-icons {

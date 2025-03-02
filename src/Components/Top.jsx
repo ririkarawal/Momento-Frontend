@@ -6,7 +6,6 @@ import { getCategories } from "../api/api";
 import "./../styles/top.css";
 
 const Top = () => {
-    const [searchQuery, setSearchQuery] = useState("");
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
     const [categories, setCategories] = useState([]);
@@ -67,16 +66,6 @@ const Top = () => {
                 <h1>Momento</h1>
             </div>
 
-            <div className="search-bar-container">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="search-input"
-                />
-                <span className="search-icon">🔍</span>
-            </div>
 
             <div className="nav-icons">
                 <div className="dropdown">

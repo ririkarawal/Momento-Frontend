@@ -100,7 +100,6 @@ const getFollowingStatus = (userId) =>
   axios.get(`${API_URL}/follows/status/${userId}`, {
     headers: getAuthHeaders()
   });
-
 // Current user info
 const getCurrentUser = () => axios.get(`${API_URL}/users/me`, { headers: getAuthHeaders() });
 

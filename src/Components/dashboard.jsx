@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { SlUserFollow, SlUserFollowing } from "react-icons/sl";
-import { getUploads, getComments, createComment, deleteComment, getCurrentUser, createPin, getPins, deletePin } from "../api/api";
+import {getUploads,getComments,createComment,deleteComment,createPin,getPins,deletePin,toggleFollow,getFollowersCount,getFollowingStatus} from "../api/api";
 import "./../styles/Dashboard.css";
 import Top from "./Top.jsx";
 
@@ -15,6 +15,8 @@ const Dashboard = () => {
   const [pinnedItems, setPinnedItems] = useState({});
   const [followedUsers, setFollowedUsers] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [followLoading, setFollowLoading] = useState({});
+  const [followCounts, setFollowCounts] = useState({});
 
   const getStoredToken = () => {
     const token = localStorage.getItem("token");
@@ -27,12 +29,63 @@ const Dashboard = () => {
     return `http://localhost:5000/uploads/${cleanPath}`;
   };
 
-  const toggleFollow = (userId, username, e) => {
+  // Function to fetch followers count
+  const fetchFollowersCount = async (userId) => {
+    try {
+      const response = await getFollowersCount(userId);
+      setFollowCounts(prev => ({
+        ...prev,
+        [userId]: response.data.followers
+      }));
+    } catch (error) {
+      console.error(`Error fetching followers count for user ${userId}:`, error);
+    }
+  };
+
+  // Updated toggleFollow function
+  const handleToggleFollow = async (userId, username, e) => {
     e.stopPropagation();
-    setFollowedUsers(prev => ({
+
+    if (!isAuthenticated) {
+      alert("You need to be logged in to follow users");
+      return;
+    }
+
+    if (!userId) {
+      console.error("Cannot follow: User ID is missing");
+      return;
+    }
+
+    // Set loading state for this specific user
+    setFollowLoading(prev => ({
       ...prev,
-      [userId]: !prev[userId]
+      [userId]: true
     }));
+
+    try {
+      // Call the API to toggle follow status
+      const response = await toggleFollow(userId);
+
+      // Update the local state based on response
+      const isNowFollowing = response.data.isFollowing;
+
+      setFollowedUsers(prev => ({
+        ...prev,
+        [userId]: isNowFollowing
+      }));
+
+      // Update followers count after toggle
+      fetchFollowersCount(userId);
+
+    } catch (error) {
+      console.error("Error toggling follow status:", error);
+      alert(error.response?.data?.message || "Failed to update follow status");
+    } finally {
+      setFollowLoading(prev => ({
+        ...prev,
+        [userId]: false
+      }));
+    }
   };
 
   useEffect(() => {
@@ -106,6 +159,35 @@ const Dashboard = () => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  // Add this useEffect to load follow data when uploads are loaded
+  useEffect(() => {
+    const loadFollowData = async () => {
+      if (!loading && uploads.length > 0) {
+        for (const upload of uploads) {
+          if (upload.User && upload.User.id) {
+            // Fetch followers count for each upload creator
+            await fetchFollowersCount(upload.User.id);
+
+            // If user is authenticated, also fetch follow status
+            if (isAuthenticated) {
+              try {
+                const response = await getFollowingStatus(upload.User.id);
+                setFollowedUsers(prev => ({
+                  ...prev,
+                  [upload.User.id]: response.data.isFollowing
+                }));
+              } catch (error) {
+                console.error("Error fetching follow status:", error);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    loadFollowData();
+  }, [loading, uploads, isAuthenticated]);
 
   const getCommentsByUploadId = async (uploadId) => {
     try {
@@ -333,14 +415,27 @@ const Dashboard = () => {
                   />
                 </div>
                 <div className="info">
-                  <span className="username">
-                    {upload.User?.username || "Unknown User"}
-                  </span>
+                  <div className="user-info">
+                    <span className="username">
+                      {upload.User?.username || "Unknown User"}
+                    </span>
+                    {followCounts[upload.User?.id] !== undefined && (
+                      <span className="followers-count">
+                        {followCounts[upload.User?.id]} {followCounts[upload.User?.id] === 1 ? 'follower' : 'followers'}
+                      </span>
+                    )}
+                  </div>
                   <button
-                    className="follow"
-                    onClick={(e) => toggleFollow(upload.User?.id, upload.User?.username, e)}
+                    className="follow-button"
+                    onClick={(e) => handleToggleFollow(upload.User?.id, upload.User?.username, e)}
+                    disabled={followLoading[upload.User?.id]}
                   >
-                    {followedUsers[upload.User?.id] ? <SlUserFollowing /> : <SlUserFollow />}
+                    {followLoading[upload.User?.id] ?
+                      '...' :
+                      followedUsers[upload.User?.id] ?
+                        <SlUserFollowing /> :
+                        <SlUserFollow />
+                    }
                   </button>
                 </div>
               </div>
@@ -375,6 +470,11 @@ const Dashboard = () => {
                 <div className="preview-header">
                   <div className="preview-author">
                     By {selectedUpload.User?.username || "Unknown User"}
+                    {followCounts[selectedUpload.User?.id] !== undefined && (
+                      <span className="followers-count">
+                        • {followCounts[selectedUpload.User?.id]} {followCounts[selectedUpload.User?.id] === 1 ? 'follower' : 'followers'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -389,9 +489,15 @@ const Dashboard = () => {
                   <div className="actions">
                     <button
                       className="action-button"
-                      onClick={(e) => toggleFollow(selectedUpload.User?.id, selectedUpload.User?.username, e)}
+                      onClick={(e) => handleToggleFollow(selectedUpload.User?.id, selectedUpload.User?.username, e)}
+                      disabled={followLoading[selectedUpload.User?.id]}
                     >
-                      {followedUsers[selectedUpload.User?.id] ? <SlUserFollowing /> : <SlUserFollow />}
+                      {followLoading[selectedUpload.User?.id] ?
+                        '...' :
+                        followedUsers[selectedUpload.User?.id] ?
+                          <SlUserFollowing /> :
+                          <SlUserFollow />
+                      }
                     </button>
                     <button className="action-button">
                       💬 {comments.length}

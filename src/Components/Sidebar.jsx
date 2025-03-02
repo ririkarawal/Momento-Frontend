@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FaHome, FaUpload, FaBell, FaCog, FaBars } from "react-icons/fa";
+import { FaHome, FaUpload, FaBars } from "react-icons/fa";
 import Upload from "./Upload"; // Import Upload component
 import "./../styles/Sidebar.css";
 
@@ -27,14 +27,6 @@ const Sidebar = () => {
       case "Upload":
         setShowUpload(true);
         break;
-      case "Reminder":
-        alert("Reminder feature coming soon!");
-        break;
-      case "Setting":
-        navigate("/profile");
-        break;
-      default:
-        break;
     }
   };
 
@@ -60,18 +52,8 @@ const Sidebar = () => {
               isExpanded={isExpanded}
               onClick={() => handleSidebarItemClick("Upload")}
             />
-            <SidebarItem
-              icon={<FaBell />}
-              label="Reminder"
-              isExpanded={isExpanded}
-              onClick={() => handleSidebarItemClick("Reminder")}
-            />
-            <SidebarItem
-              icon={<FaCog />}
-              label="Setting"
-              isExpanded={isExpanded}
-              onClick={() => handleSidebarItemClick("Setting")}
-            />
+           
+            
           </nav>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getUserUploads, getPins, deletePin } from "../api/api";
+import { getUserUploads, getPins, deletePin, getFollowersCount, getFollowingStatus, toggleFollow } from "../api/api";
 import "./../styles/Profile.css";
 import Top from "./Top";
 
@@ -10,6 +10,9 @@ const Profile = () => {
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("created");
+  const [followersCount, setFollowersCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const normalizeImagePath = (imagePath) => {
     if (!imagePath) return null;
@@ -25,40 +28,75 @@ const Profile = () => {
     try {
       const userId = localStorage.getItem("userId");
       const username = localStorage.getItem("username");
+      
+      // Get userId from URL if this is viewing another user's profile
+      // This assumes you have a route like /profile?id=123
+      const urlParams = new URLSearchParams(window.location.search);
+      const profileUserId = urlParams.get('id') || userId;
+      const isOwnProfile = profileUserId === userId;
 
-      console.log("User data from localStorage:", { userId, username });
+      console.log("User data:", { profileUserId, isOwnProfile });
 
       if (!userId || !username) {
         throw new Error("User data not found. Please login again.");
       }
 
-      setUser({ username, userId });
+      // Get user details (you might need to add an API endpoint to fetch user by ID)
+      // For now, using localStorage for own profile
+      if (isOwnProfile) {
+        setUser({ username, userId: profileUserId });
+      } else {
+        // You might need to fetch other user's details from backend
+        // For now just setting the ID until you have the API endpoint
+        setUser({ userId: profileUserId });
+      }
 
-      // Fetch only this user's uploads
-      const uploadsResponse = await getUserUploads(userId);
+      // Fetch followers count
+      try {
+        console.log(`Requesting followers count for user ID: ${profileUserId}`);
+        const followersResponse = await getFollowersCount(profileUserId);
+        console.log("Followers count response:", followersResponse.data);
+        setFollowersCount(followersResponse.data.followers);
+      } catch (followersError) {
+        console.error("Error fetching followers count:", followersError);
+      }
+
+      // Fetch follow status (only if viewing someone else's profile)
+      if (!isOwnProfile) {
+        try {
+          const followStatusResponse = await getFollowingStatus(profileUserId);
+          console.log("Follow status response:", followStatusResponse.data);
+          setIsFollowing(followStatusResponse.data.isFollowing);
+        } catch (followStatusError) {
+          console.error("Error fetching following status:", followStatusError);
+        }
+      }
+
+      // Fetch only this profile's uploads
+      const uploadsResponse = await getUserUploads(profileUserId);
       console.log("User uploads:", uploadsResponse.data);
       setUploads(uploadsResponse.data);
 
-      // Fetch user's pins
+      // Fetch profile's pins
       try {
         const pinsResponse = await getPins();
         console.log("All pins response:", pinsResponse.data);
 
-        // Make sure we're properly filtering pins for this user
+        // Make sure we're properly filtering pins for this profile
         // using the correct userId capitalization and converting to strings for comparison
         const userPins = pinsResponse.data.filter(pin => {
           // Use the capital "I" for userId to match the database
           const pinUserId = pin.userId || pin.userid; // Try both capitalizations
           const pinUserIdStr = String(pinUserId);
-          const userIdStr = String(userId);
+          const profileUserIdStr = String(profileUserId);
 
-          console.log(`Comparing pin userId ${pinUserIdStr} with user ${userIdStr}:`,
-            pinUserIdStr === userIdStr);
+          console.log(`Comparing pin userId ${pinUserIdStr} with profile ${profileUserIdStr}:`,
+            pinUserIdStr === profileUserIdStr);
 
           // Also check Upload exists before trying to access it
           const hasUpload = pin.Upload || pin.upload; // Try both capitalizations
 
-          return pinUserIdStr === userIdStr && hasUpload;
+          return pinUserIdStr === profileUserIdStr && hasUpload;
         });
 
         console.log("Filtered user pins:", userPins);
@@ -129,11 +167,45 @@ const Profile = () => {
       // If pin isn't found, still update UI
       if (error.response?.status === 404) {
         setPins(prev => prev.filter(p => p.id !== pinId));
-        alert("Pin was already removed");
+        alert("Pin already removed");
       } else {
         alert(error.response?.data?.message || "Failed to remove pin");
       }
     }
+  };
+  
+  // Handle follow/unfollow
+  const handleFollowToggle = async () => {
+    if (!user || !user.userId) return;
+    
+    setFollowLoading(true);
+    
+    try {
+      console.log(`Toggling follow for user ID: ${user.userId}`);
+      const response = await toggleFollow(user.userId);
+      console.log("Follow toggle response:", response.data);
+      
+      // Update UI based on new follow status
+      setIsFollowing(response.data.isFollowing);
+      
+      // Update followers count
+      if (response.data.isFollowing) {
+        setFollowersCount(prev => prev + 1);
+      } else {
+        setFollowersCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      alert(error.response?.data?.message || "Failed to update follow status");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+  
+  // Check if this is the user's own profile
+  const isOwnProfile = () => {
+    const loggedInUserId = localStorage.getItem("userId");
+    return user && user.userId === loggedInUserId;
   };
 
   return (
@@ -148,11 +220,20 @@ const Profile = () => {
         ) : (
           <>
             <h2 className="username">{user ? user.username : "Loading..."}</h2>
-            <p className="following">0 following</p>
+            <p className="followers-count">{followersCount} {followersCount === 1 ? "follower" : "followers"}</p>
+            
+            {/* Only show follow button if this is not the user's own profile */}
+            {user && !isOwnProfile() && (
+              <button 
+                className={`follow-button ${isFollowing ? 'following' : ''}`} 
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
+                {followLoading ? 'Processing...' : isFollowing ? 'Unfollow' : 'Follow'}
+              </button>
+            )}
           </>
         )}
-
-        <button className="edit-profile">Edit Profile</button>
       </div>
 
       <div className="tabs">
@@ -208,7 +289,7 @@ const Profile = () => {
             <div className="pins-gallery">
               {pins.length > 0 ? (
                 pins.map((pin) => {
-                  // Get the Upload, accounting for different capitalization
+                  // Get the Upload, accounting for different capitalizations
                   const upload = pin.Upload || pin.upload;
 
                   return (
