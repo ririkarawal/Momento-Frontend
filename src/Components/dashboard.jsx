@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { SlUserFollow, SlUserFollowing } from "react-icons/sl";
-import {getUploads,getComments,createComment,deleteComment,createPin,getPins,deletePin,toggleFollow,getFollowersCount,getFollowingStatus} from "../api/api";
+import {getUploads,getComments,createComment,deleteComment,updateComment,createPin,getPins,deletePin,toggleFollow,getFollowersCount,getFollowingStatus
+} from "../api/api";
 import "./../styles/Dashboard.css";
 import Top from "./Top.jsx";
 
@@ -17,6 +18,10 @@ const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [followLoading, setFollowLoading] = useState({});
   const [followCounts, setFollowCounts] = useState({});
+
+  // New states for comment editing
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedCommentText, setEditedCommentText] = useState("");
 
   const getStoredToken = () => {
     const token = localStorage.getItem("token");
@@ -86,6 +91,66 @@ const Dashboard = () => {
         [userId]: false
       }));
     }
+  };
+
+  // New method for handling comment edit
+  const handleEditComment = (comment) => {
+    if (!isAuthenticated) {
+      alert("You need to be logged in to edit comments.");
+      return;
+    }
+
+    const currentUserId = parseInt(localStorage.getItem('userId'));
+    if (comment.userId !== currentUserId) {
+      alert("You can only edit your own comments.");
+      return;
+    }
+
+    setEditingCommentId(comment.id);
+    setEditedCommentText(comment.text);
+  };
+
+  // New method for updating comment
+  const handleUpdateComment = async (e) => {
+    e.preventDefault();
+
+    if (!editedCommentText.trim()) {
+      alert("Comment cannot be empty");
+      return;
+    }
+
+    try {
+      const response = await updateComment(editingCommentId, { text: editedCommentText });
+
+      // Update the comments list
+      setComments(comments.map(comment =>
+        comment.id === editingCommentId
+          ? { ...comment, text: editedCommentText }
+          : comment
+      ));
+
+      // Reset editing state
+      setEditingCommentId(null);
+      setEditedCommentText("");
+
+      alert("Comment updated successfully!");
+    } catch (error) {
+      console.error("Error updating comment:", error);
+
+      if (error.response?.status === 401) {
+        alert("You need to be logged in to edit comments.");
+      } else if (error.response?.status === 403) {
+        alert("You are not authorized to edit this comment.");
+      } else {
+        alert("Failed to update comment: " + (error.response?.data?.message || "Please try again."));
+      }
+    }
+  };
+
+  // Method to cancel editing
+  const cancelEdit = () => {
+    setEditingCommentId(null);
+    setEditedCommentText("");
   };
 
   useEffect(() => {
@@ -419,10 +484,9 @@ const Dashboard = () => {
                     <span className="username">
                       {upload.User?.username || "Unknown User"}
                     </span>
-                    {followCounts[upload.User?.id] !== undefined && (
-                      <span className="followers-count">
-                        {followCounts[upload.User?.id]} {followCounts[upload.User?.id] === 1 ? 'follower' : 'followers'}
-                      </span>
+                    {followCounts[upload.User?.id] !== undefined && (<span className="followers-count">
+                      {followCounts[upload.User?.id]} {followCounts[upload.User?.id] === 1 ? 'follower' : 'followers'}
+                    </span>
                     )}
                   </div>
                   <button
@@ -514,19 +578,51 @@ const Dashboard = () => {
                     ) : comments.length > 0 ? (
                       comments.map(comment => (
                         <div className="comment" key={comment.id}>
-                          <div className="comment-header">
-                            <strong>{comment.User?.username || "User"}</strong>
-                            <span className="comment-time">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
-                            <button
-                              className="delete-comment-btn"
-                              onClick={(e) => handleDeleteComment(comment.id, e)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                          <p className="comment-text">{comment.text}</p>
+                          {editingCommentId === comment.id ? (
+                            <form onSubmit={handleUpdateComment} className="edit-comment-form">
+                              <textarea
+                                value={editedCommentText}
+                                onChange={(e) => setEditedCommentText(e.target.value)}
+                                rows={3}
+                              />
+                              <div className="edit-comment-actions">
+                                <button type="submit" className="update-comment-btn">Update</button>
+                                <button
+                                  type="button"
+                                  className="cancel-edit-btn"
+                                  onClick={cancelEdit}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </form>
+                          ) : (
+                            <>
+                              <div className="comment-header">
+                                <strong>{comment.User?.username || "User"}</strong>
+                                <span className="comment-time">
+                                  {new Date(comment.createdAt).toLocaleDateString()}
+                                </span>
+                                <div className="comment-actions">
+                                  {comment.userId === parseInt(localStorage.getItem('userId')) && (
+                                    <button
+                                      className="edit-comment-btn"
+                                      onClick={() => handleEditComment(comment)}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                  <button
+                                    className="delete-comment-btn"
+                                    onClick={(e) => handleDeleteComment(comment.id, e)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="comment-text">{comment.text}</p>
+                            </>
+                          )}
                         </div>
                       ))
                     ) : (
